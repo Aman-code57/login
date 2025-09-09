@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update User</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: white;
+    }
+
+    .update-container {
+      background: burlywood;
+      padding: 2rem;
+      border-radius: 15px;
+      width: 350px;
+      box-shadow: 0 0 10px yellowgreen;
+    }
+
+    .update-container h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: black;
+    }
+
+    .update-container label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: black;
+    }
+
+    .update-container input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid #31dcf3;
+      border-radius: 8px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .update-container input:focus {
+      border-color: #2575fc;
+      box-shadow: 0 0 5px beige;
+    }
+
+    .update-container button {
+      width: 100%;
+      padding: 10px;
+      background: white;
+      border: none;
+      color: rgb(15, 15, 15);
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .update-container button:hover {
+      background: green;
+      color: white;
+    }
+
+    .update-container .extra-links {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .update-container .extra-links a {
+      color: #2575fc;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .update-container .extra-links a:hover {
+      text-decoration: underline;
+    }
+    a{
+      text-decoration: none;
+      display: flex;
+      color: black;
+      justify-content: center;
+      align-items: center;
+      align-self: center;
+      margin-top: 15px;
+    }
+    a:hover
+    {
+      color: #2575fc;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="update-container">
+    <h2>Update User</h2>
+    <form method="post" action="/update">
+      <input type="hidden" id="id" name="id">
+
+      <label for="fullname">Fullname</label>
+      <input type="text" id="fullname" name="fullname" required>
+
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required>
+
+      <label for="address">Address</label>
+      <input type="text" id="address" name="address" required>
+
+      <label for="mobilenumber">Mobile number</label>
+      <input type="text" id="mobilenumber" name="mobilenumber" required>
+
+      <button type="submit">Update</button>
+      <a href="homepage.html">Back to Home</a>
+    </form>
+  </div>
+
+  <!-- Bottom of update.html -->
+    <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');   // use id, not username
+
+    if (id) {
+      fetch(`/api/user?id=${encodeURIComponent(id)}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("User not found");
+          }
+          return response.json();
+        })
+        .then(data => {
+          document.getElementById('id').value = data.id;
+          document.getElementById('fullname').value = data.fullname;
+          document.getElementById('username').value = data.username;
+          document.getElementById('address').value = data.address;
+          document.getElementById('mobilenumber').value = data.mobilenumber;
+        })
+        .catch(err => {
+          alert("Failed to load user: " + err.message);
+        });
+    } else {
+      alert("No ID provided in URL.");
+    }
+  </script>
+
+</body>
+</html>

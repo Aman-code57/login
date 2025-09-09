@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up Page</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: white;
+    }
+
+    .signup-container {
+      background: burlywood;
+      padding: 2rem;
+      border-radius: 15px;
+      width: 350px;
+      box-shadow: 0 0 10px yellowgreen;
+    }
+
+    .signup-container h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: black;
+    }
+
+    .signup-container label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: black;
+    }
+
+    .signup-container input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid #31dcf3;
+      border-radius: 8px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .signup-container input:focus {
+      border-color: #2575fc;
+      box-shadow: 0 0 5px beige;
+    }
+
+    .signup-container button {
+      width: 100%;
+      padding: 10px;
+      background: white;
+      border: none;
+      color: rgb(15, 15, 15);
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .signup-container button:hover {
+      background: green;
+      color: white;
+    }
+
+    .signup-container .extra-links {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .signup-container .extra-links a {
+      color: #2575fc;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .signup-container .extra-links a:hover {
+      text-decoration: underline;
+    }
+    .required{
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-container">
+    <h2>Sign Up</h2>
+        <form id="signupForm">
+      <label for="fullname">Fullname  <span class="required">*</span></label>
+      <input type="text" id="fullname" name="fullname" required
+      pattern="^[A-Za-z]{1,12}$"
+      title="Must be exactly 1 to 12 letters (A to Z only), no numbers or special characters.">
+
+      <label for="username">Username  <span class="required">*</span></label>
+      <input type="text" id="username" name="username"
+      required
+      pattern="^[A-Za-z0-9@#$%^&*!]{6,12}$"
+      title="Please enter a valid username (6-12 characters, letters, numbers, and special characters).">
+
+      <label for="password">Password  <span class="required">*</span></label>
+      <input type="password" id="password" name="password" required
+      pattern=".{8,}"
+      title="Password must be at least 8 characters long">
+
+      <label for="confirm_password">Confirm Password  <span class="required">*</span></label>
+      <input type="password" id="confirm_password" name="confirm_password" required>
+
+      <label for="email">Email  <span class="required">*</span></label>
+      <input type="text" id="email" name="email"
+      required
+      pattern="^[A-Za-z0-9@#$%^&*!]{6,12}$"
+      title="Please enter a valid email (6-12 characters, letters, numbers, and special characters).">
+
+      <label for="mobileno">Mobile No <span class="required">*<span></label>
+      <input type="mobileno" id="mobileno" name="mobileno" required
+      pattern="^[0-9]{10}$"
+      title="number upto 10 numbers">
+      
+
+      <button type="submit">Sign Up</button>
+    </form>
+    <div class="extra-links">
+      <p>Already have an account? <a href="index.html">Login here</a></p>
+    </div>
+  </div>
+<script>
+  document.getElementById("signupForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const res = await fetch("/signup", { method: "POST", body: formData });
+  const data = await res.json();
+
+  if (data.access_token) {
+    localStorage.setItem("access_token", data.access_token);
+    window.location.href = "index.html";
+  } else {
+    alert(data.error || "Signup failed");
+  }
+});
+</script>
+</body>
+</html>

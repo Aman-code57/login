@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login Page</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f2f2f2;
+    }
+
+    .login-container {
+      background: burlywood;
+      padding: 2rem;
+      border-radius: 15px;
+      width: 350px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .login-container h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: black;
+    }
+
+    .login-container label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .login-container input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .login-container input:focus {
+      border-color: #2575fc;
+      box-shadow: 0 0 5px rgba(37, 117, 252, 0.5);
+    }
+
+    .login-container button {
+      width: 100%;
+      padding: 10px;
+      background: white;
+      border: none;
+      color: #0f0f0f;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .login-container button:hover {
+      background: green;
+      color: white;
+    }
+
+    .extra-links {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .extra-links a {
+      color: #2575fc;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .extra-links a:hover {
+      text-decoration: underline;
+    }
+
+    .required {
+      color: red;
+      font-weight: bold;
+    }
+
+    /* Toast Styles */
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      margin-left: -125px;
+      background: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 8px;
+      padding: 12px;
+      position: fixed;
+      z-index: 1000;
+      left: 50%;
+      bottom: 30px;
+      font-size: 16px;
+      opacity: 0;
+      transition: opacity 0.5s, bottom 0.5s;
+    }
+    #toast.show {
+      visibility: visible;
+      opacity: 1;
+      bottom: 50px;
+    }
+    #toast.success { background: #28a745; }
+    #toast.error { background: #dc3545; }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <label for="username">Username <span class="required">*</span></label>
+      <input type="text" id="username" name="username" required
+      pattern="^[a-z0-9@#$%^&*!]{6,12}$"
+      title="Please enter a valid username (6-12 characters, letters, numbers, and special characters).">
+
+      <label for="password">Password <span class="required">*</span></label>
+      <input type="password" id="password" name="password" required>
+
+      <button type="submit">Login</button>
+    </form>
+
+    <div class="extra-links">
+      <p>Don't have an account? Register <a href="signup.html">Sign Up</a></p>
+      <p><a href="verification.html">Forgot password</a></p>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast"></div>
+
+  <script>
+    function showToast(message, type = "success") {
+      const toast = document.getElementById("toast");
+      toast.className = `show ${type}`;
+      toast.innerText = message;
+
+      setTimeout(() => {
+        toast.className = toast.className.replace("show", "");
+      }, 1000);
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      try {
+        const res = await fetch("/", { method: "POST", body: formData });
+        const data = await res.json();
+
+        if (data.access_token) {
+          showToast(data.message || "Login successful!", "success");
+          localStorage.setItem("access_token", data.access_token);
+          setTimeout(() => {
+            window.location.href = "homepage.html";
+          }, 1000); // wait a bit so user can see the toast
+        } else {
+          showToast(data.error || "Login failed", "error");
+        }
+      } catch (err) {
+        showToast("Server error. Please try again.", "error");
+      }
+    });
+  </script>
+</body>
+</html>
