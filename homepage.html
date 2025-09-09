@@ -2,176 +2,234 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Homepage</title>
+  <title>User Management System</title>
   <style>
+    /* Global Styles */
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f2f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f0f2f5, #e3f2fd);
       margin: 0;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 36px;
+      padding: 0;
       color: #333;
     }
 
-    .top-links {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .top-links a {
-      text-decoration: none;
-      font-weight: bold;
-      color: #007BFF;
-    }
-
-    form {
-      display: flex;
-      justify-content: center;
-    }
-    .create-button {
-      text-align: right;
-      margin-bottom: 10px;
-    }
-
-    .create-button button {
-      background-color: #28a745;
+    /* Header */
+    header {
+      background: #007BFF;
+      padding: 15px 30px;
       color: white;
-      border: none;
-      padding: 8px 16px;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
 
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    header a {
+      color: white;
+      font-weight: bold;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    header a:hover {
+      color: #ffeb3b;
+    }
+
+    /* Page Heading */
+    .page-heading {
+      text-align: center;
+      margin: 25px 0 10px 0;
+      font-size: 32px;
+      font-weight: bold;
+      color: #222;
+      letter-spacing: 1px;
+    }
+
+    /* Main */
+    main {
+      padding: 20px;
+      max-width: 1100px;
+      margin: 0 auto 40px auto;
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 15px;
+    }
+
+    .top-actions button {
+      background-color: #28a745;
+      border: none;
+      color: white;
+      padding: 10px 18px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .top-actions button:hover {
+      background-color: #218838;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      color: #444;
+    }
+
+    /* Table */
     table {
       width: 100%;
       border-collapse: collapse;
-      background-color: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     th, td {
-      border: 1px solid #ddd;
-      padding: 12px;
+      padding: 14px 12px;
       text-align: center;
     }
 
     th {
-      background-color: #007BFF;
+      background: #007BFF;
       color: white;
+      font-size: 15px;
+      letter-spacing: 0.5px;
     }
 
-    input[type="text"],
-    input[type="password"] {
-      width: 90%;
-      padding: 6px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+    tr:nth-child(even) {
+      background: #f9f9f9;
     }
 
-    button {
+    tr:hover {
+      background: #f1faff;
+      transition: 0.2s;
+    }
+
+    /* Buttons */
+    button.action {
       padding: 6px 12px;
-      margin: 2px;
       border: none;
       border-radius: 4px;
+      font-size: 14px;
       cursor: pointer;
-      color: white;
+      transition: 0.3s;
     }
 
-    button[name="create"] {
-      background-color: #28a745;
-    }
-
-    button[name="update"] {
-      background-color: #ffc107;
+    button.update {
+      background: #ffc107;
       color: black;
     }
 
-    button[name="delete"] {
-      background-color: #dc3545;
-    }
-    .top-links a:hover{
-        color: red;
+    button.update:hover {
+      background: #e0a800;
     }
 
+    button.delete {
+      background: #dc3545;
+      color: white;
+    }
 
+    button.delete:hover {
+      background: #c82333;
+    }
+
+    /* Responsive */
     @media (max-width: 768px) {
-      table, input, button {
-        font-size: 14px;
+      header {
+        flex-direction: column;
+        gap: 10px;
+      }
+      table, th, td {
+        font-size: 13px;
+      }
+      .top-actions {
+        justify-content: center;
       }
     }
   </style>
 </head>
 <body>
 
-  <h1>Homepage</h1>
-
-  <div class="top-links">
+  <!-- Header -->
+  <header>
+    <h1>Homepage</h1>
     <a href="#" onclick="logout()">Logout</a>
-  </div>
- <form action="create_user.html" method="GET" class="create-button">
-  <button type="submit">Create</button>
- </form>
-  <h2>User List</h2>
-    <ul id="user-list"></ul>
-  <form action="homepage.html" method="POST">
-    <table>
-  <thead>
-    <tr>
-       <th>ID</th>
-      <th>Full Name</th>
-      <th>Username</th>
-      <th>Address</th>
-      <th>Mobile Number</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody id="user-table-body">
-    <!-- Dynamic rows will go here -->
-  </tbody>
-</table>
+  </header>
 
-  </form>
- <script>
+  <!-- Page Heading -->
+  <div class="page-heading">User Management System</div>
+
+  <!-- Main Content -->
+  <main>
+    <div class="top-actions">
+      <form action="create_user.html" method="GET">
+        <button type="submit">Create User</button>
+      </form>
+    </div>
+
+    <h2>User List</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Full Name</th>
+          <th>Username</th>
+          <th>Address</th>
+          <th>Mobile Number</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="user-table-body">
+        <!-- Dynamic rows go here -->
+      </tbody>
+    </table>
+  </main>
+
+  <!-- Script -->
+  <script>
     const token = localStorage.getItem("access_token");
 
-  fetch('/api/users', {
-    headers: { "Authorization": `Bearer ${token}` }
-  })
-    .then(response => {
-      if (response.status === 401) {
-        alert("Session expired. Please log in again.");
-        window.location.href = "index.html";
-        return;
-      }
-      return response.json();
+    fetch('/api/users', {
+      headers: { "Authorization": `Bearer ${token}` }
     })
-    .then(data => {
-      if (!data) return;
+      .then(response => {
+        if (response.status === 401) {
+          alert("Session expired. Please log in again.");
+          window.location.href = "index.html";
+          return;
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (!data) return;
 
-      const tbody = document.getElementById('user-table-body');
-      data.forEach(user => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${user.id}</td>
-          <td>${user.fullname}</td>
-          <td>${user.username}</td>
-          <td>${user.address}</td>
-          <td>${user.mobilenumber}</td>
-          <td>
-            <button type="button" name="update" onclick="handleUpdate('${user.id}')">Update</button>
-            <button type="button" name="delete" onclick="handleDelete('${user.username}')">Delete</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    })
-    .catch(error => console.error("Error fetching user list:", error));
-
+        const tbody = document.getElementById('user-table-body');
+        data.forEach(user => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.fullname}</td>
+            <td>${user.username}</td>
+            <td>${user.address}</td>
+            <td>${user.mobilenumber}</td>
+            <td>
+              <button class="action update" onclick="handleUpdate('${user.id}')">Update</button>
+              <button class="action delete" onclick="handleDelete('${user.username}')">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      })
+      .catch(error => console.error("Error fetching user list:", error));
 
     function handleUpdate(id) {
       window.location.href = `/update?id=${encodeURIComponent(id)}`;
@@ -190,11 +248,11 @@
           .catch(err => console.error("Delete failed:", err));
       }
     }
+
     function logout() {
-      localStorage.removeItem("access_token");   // delete JWT from browser
-      window.location.href = "index.html"; // redirect to login page
+      localStorage.removeItem("access_token");
+      window.location.href = "index.html";
     }
-    
   </script>
 </body>
 </html>
