@@ -9,6 +9,11 @@ import re
 import secrets
 import random, smtplib
 from email.mime.text import MIMEText
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 app = FastAPI()
 security = HTTPBearer()
@@ -164,23 +169,32 @@ async def login_admin(username: str = Form(...), password: str = Form(...)):
         })
     else:
         return JSONResponse({"error": "Invalid username or password"}, status_code=401)
+    
+# Email Sender 
+EMAIL_USER = os.getenv("EMAIL_USER", "amanraturi5757@gmail.com")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "epif azzt hgjg zvcy")
 
+def send_email(subject, body, sender, recipients, password):
+    msg = MIMEText(body)
+    msg["Subject"] = subject
+    msg["From"] = sender
+    msg["To"] = ", ".join(recipients)
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp_server:
+        smtp_server.login(sender, password)
+        smtp_server.sendmail(sender, recipients, msg.as_string())
+    print("OTP sent to email!")
+
+
+# FOR VERIFICATION RESET PASSWORD
 @app.post("/verify")
 async def verify_user(method: str = Form(...), inputValue: str = Form(...)):
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
     if method == "email":
-        if not EMAIL_REGEX.match(inputValue):
-            cursor.close()
-            db.close()
-            return JSONResponse({"error": "Invalid email format"}, status_code=400)
         cursor.execute("SELECT * FROM admins WHERE email = %s", (inputValue,))
     elif method == "mobileno":
-        if not MOBILE_REGEX.match(inputValue):
-            cursor.close()
-            db.close()
-            return JSONResponse({"error": "Invalid mobile number format"}, status_code=400)
         cursor.execute("SELECT * FROM admins WHERE mobileno = %s", (inputValue,))
     else:
         cursor.close()
@@ -188,26 +202,63 @@ async def verify_user(method: str = Form(...), inputValue: str = Form(...)):
         return JSONResponse({"error": "Invalid method"}, status_code=400)
 
     user = cursor.fetchone()
-    cursor.close()
-    db.close()
-
     if not user:
+        cursor.close()
+        db.close()
         return JSONResponse({"error": "User not found"}, status_code=404)
 
-    # Generate reset token
-    reset_token = secrets.token_urlsafe(32)
+    # Generate OTP
+    otp = str(random.randint(100000, 999999))
+    expiry = datetime.utcnow() + timedelta(minutes=5)
 
-    # Store token in DB
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("UPDATE admins SET reset_token = %s WHERE id = %s", (reset_token, user["id"]))
+    cursor.execute("UPDATE admins SET otp_code=%s, otp_expiry=%s WHERE id=%s",
+                   (otp, expiry, user["id"]))
     db.commit()
     cursor.close()
     db.close()
 
-    # Redirect to forgot password page with token
-    return RedirectResponse(url=f"/forgot_password.html?token={reset_token}", status_code=303)
+    # Send email
+    subject = "Your Verification OTP"
+    body = f"Your OTP is {otp}. It is valid for 5 minutes."
+    recipients = [user["email"]]
+    try:
+        send_email(subject, body, EMAIL_USER, recipients, EMAIL_PASSWORD)
+    except Exception as e:
+        return JSONResponse({"error": f"Failed to send OTP email: {str(e)}"}, status_code=500)
 
+    return RedirectResponse(url="/otp.html", status_code=303)
+
+# VERIFY FOR RESET PASSWORD
+@app.post("/verify_reset_otp")
+async def verify_reset_otp(otp: str = Form(...)):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM admins WHERE otp_code=%s", (otp,))
+    user = cursor.fetchone()
+
+    if not user:
+        cursor.close()
+        db.close()
+        return JSONResponse({"error": "Invalid OTP"}, status_code=400)
+
+    if user["otp_expiry"] < datetime.utcnow():
+        cursor.close()
+        db.close()
+        return JSONResponse({"error": "OTP expired"}, status_code=400)
+
+    reset_token = secrets.token_urlsafe(32)
+    cursor.execute("UPDATE admins SET reset_token=%s, otp_code=NULL, otp_expiry=NULL WHERE id=%s",
+                   (reset_token, user["id"]))
+    db.commit()
+    cursor.close()
+    db.close()
+
+    redirect_url = f"/forgot_password.html?token={reset_token}"
+    return RedirectResponse(url=redirect_url, status_code=303)
+
+
+# FOR RESET PASSWORD
 @app.post("/reset_password")
 async def reset_password(token: str = Form(...), password: str = Form(...), confirmPassword: str = Form(...)):
     if password != confirmPassword:
@@ -323,7 +374,7 @@ async def delete_user(username: str):
     return JSONResponse(content={"message": "User deleted successfully"})
 
 
-
+# register new admin
 @app.post("/signup")
 async def signup(
     fullname: str = Form(...),
@@ -390,7 +441,7 @@ async def signup(
 
     return JSONResponse({"message": "OTP sent to your email. Please verify."})
 
-# ================= VERIFY OTP =================
+# VERIFY OTP FOR SIGNUP 
 @app.post("/verify_otp")
 async def verify_otp(email: str = Form(...), otp: str = Form(...)):
     db = get_db()
@@ -424,3 +475,25 @@ async def verify_otp(email: str = Form(...), otp: str = Form(...)):
     db.close()
 
     return RedirectResponse(url="/index.html", status_code=303)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

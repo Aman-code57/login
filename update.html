@@ -111,16 +111,21 @@
       <input type="hidden" id="id" name="id">
 
       <label for="fullname">Fullname</label>
-      <input type="text" id="fullname" name="fullname" required>
+      <input type="text" id="fullname" name="fullname" required
+       pattern="^[A-Za-z]+(?: [A-Za-z]+)+$">
 
-      <label for="username">Username</label>
-      <input type="text" id="username" name="username" required>
+      <label for="username">Email</label>
+      <input type="text" id="username" name="username" required
+      pattern="^(?=[A-Za-z][A-Za-z0-9@#$%^&*!]{5,11}$)(?=(?:[^0-9]*[0-9]){2}[^0-9]*$)(?=(?:[^@#$%^&*!]*[@#$%^&*!]){1}[^@#$%^&*!]*$)[A-Za-z0-9@#$%^&*!]+$"
+      title="Username must contain only alphabets, exactly 2 numbers, and 1 special character and 6-12">
 
       <label for="address">Address</label>
       <input type="text" id="address" name="address" required>
 
       <label for="mobilenumber">Mobile number</label>
-      <input type="text" id="mobilenumber" name="mobilenumber" required>
+      <input type="text" id="mobilenumber" name="mobilenumber" required
+      pattern="^[0-9]{10}$"
+      title="number upto 10 numbers">
 
       <button type="submit">Update</button>
       <a href="homepage.html">Back to Home</a>
