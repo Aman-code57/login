@@ -180,6 +180,7 @@
     <table>
       <thead>
         <tr>
+          <th>Serial No</th>
           <th>ID</th>
           <th>Full Name</th>
           <th>Username</th>
@@ -216,6 +217,7 @@
         data.forEach(user => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
+            <td>${user.serialno}</td>
             <td>${user.id}</td>
             <td>${user.fullname}</td>
             <td>${user.username}</td>

@@ -100,7 +100,7 @@
         <form id="signupForm">
       <label for="fullname">Fullname  <span class="required">*</span></label>
       <input type="text" id="fullname" name="fullname" required
-      pattern="^[A-Za-z]{1,12}$"
+      pattern="^[A-Za-z]+(?: [A-Za-z]+)+$"
       title="Must be exactly 1 to 12 letters (A to Z only), no numbers or special characters.">
 
       <label for="username">Username  <span class="required">*</span></label>
@@ -142,9 +142,8 @@
   const res = await fetch("/signup", { method: "POST", body: formData });
   const data = await res.json();
 
-  if (data.access_token) {
-    localStorage.setItem("access_token", data.access_token);
-    window.location.href = "index.html";
+  if (data.message) {
+    window.location.href = "admin_verification.html";
   } else {
     alert(data.error || "Signup failed");
   }

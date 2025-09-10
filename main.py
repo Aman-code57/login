@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 import mysql.connector
 import re
 import secrets
+import random, smtplib
+from email.mime.text import MIMEText
 
 app = FastAPI()
 security = HTTPBearer()
@@ -41,7 +43,7 @@ def verify_token(credentials: dict = Depends(security)):
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-EMAIL_REGEX = re.compile(r"^[A-Za-z0-9@#$%^&*!]{6,12}$")
+EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 MOBILE_REGEX = re.compile(r"^[0-9]{10}$")  # 10-digit mobile number
 
 
@@ -113,6 +115,15 @@ def get_forgot_password():
     with open("forgot_password.html", "r") as f:
         return f.read()
     
+@app.get("/admin_verification.html", response_class=HTMLResponse)
+def get_admin_verify():
+    with open("admin_verification.html", "r") as f:
+        return f.read()
+    
+@app.get("/otp.html",response_class=HTMLResponse)
+def get_otp_verify():
+    with open("otp.html", "r") as f:
+        return f.read()
 
 # update
 @app.get("/api/user")
@@ -130,51 +141,7 @@ async def get_user_by_id(id: str):
         return JSONResponse(content=user)
     return JSONResponse(content={"error": "User not found"}, status_code=404)  
 
-# Sign UP
-@app.post("/signup")
-async def register_admin(
-    request: Request,
-    fullname: str = Form(...),
-    username: str = Form(...),
-    password: str = Form(...),
-    confirm_password: str = Form(...),
-    email: str = Form(...),
-    mobileno: str = Form(...)
-):
 
-    if not USERNAME_REGEX.match(username):
-        return {"error": "Invalid username format."}
-
-    if password != confirm_password:
-        return {"error": "Passwords do not match"}
-
-    if not PASSWORD_REGEX.match(password):
-        return {"error": "password must contain 8 any characters"}
-
-    hashed_pw = hash_password(password)
-
-
-    db = get_db()
-    cursor = db.cursor()
-
-    # Check if username already exists
-    cursor.execute("SELECT * FROM admins WHERE username = %s", (username,))
-    existing_user = cursor.fetchone()
-    if existing_user:
-        cursor.close()
-        db.close()
-        return {"error": "Username already registered"}
-
-    cursor.execute(
-        "INSERT INTO admins (fullname, username, password, email, mobileno) VALUES (%s, %s, %s, %s, %s)",
-        (fullname, username, hashed_pw, email, mobileno)
-    )
-    db.commit()
-    cursor.close()
-    db.close()
-
-    token = create_access_token({"sub": username})
-    return JSONResponse({"access_token": token, "token_type": "bearer"})
 
 # Login
 @app.post("/")
@@ -285,7 +252,8 @@ async def get_userlist(user: dict = Depends(verify_token)):
 @app.post("/create_user")                  # Create new user in userlist
 async def register_user(
     request: Request,
-
+    
+    id: str = Form(...),
     fullname: str = Form(...),
     username: str = Form(...),
     address: str = Form(...),
@@ -304,8 +272,8 @@ async def register_user(
         return {"error": "user already registered"}
 
     cursor.execute(
-        "INSERT INTO users (fullname, username, address, mobilenumber) VALUES (%s, %s, %s, %s)",
-        (fullname, username, address, mobilenumber)
+        "INSERT INTO users (id, fullname, username, address, mobilenumber) VALUES (%s, %s, %s, %s, %s)",
+        (id, fullname, username, address, mobilenumber)
     )
     db.commit()
     cursor.close()
@@ -315,17 +283,17 @@ async def register_user(
 
 @app.post("/update")                          # Update the userlist
 async def update_user(
-    request: Request,
-    id : str = Form(...),                     # This identifies the user to update
+    request: Request,               # This identifies the user to update
+    id : str = Form(...),
     fullname: str = Form(...),
-    username: str = Form(...),  
+    username: str = Form(...),
     address: str = Form(...),
     mobilenumber: str = Form(...)
 ):
     db = get_db()
     cursor = db.cursor()
 
-    #  Correct SQL with WHERE clause
+    #  Correct SQL with WHERE clause using serialno as primary key
     cursor.execute(
         "UPDATE users SET fullname = %s, username = %s, address = %s, mobilenumber = %s WHERE id = %s",
         (fullname, username, address, mobilenumber, id)
@@ -354,3 +322,105 @@ async def delete_user(username: str):
 
     return JSONResponse(content={"message": "User deleted successfully"})
 
+
+
+@app.post("/signup")
+async def signup(
+    fullname: str = Form(...),
+    username: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...),
+    email: str = Form(...),
+    mobileno: str = Form(...)
+):
+    if not EMAIL_REGEX.match(email):
+        return JSONResponse({"error": "Invalid email format"}, status_code=400)
+
+    if password != confirm_password:
+        return JSONResponse({"error": "Passwords do not match"}, status_code=400)
+
+    if not PASSWORD_REGEX.match(password):
+        return JSONResponse({"error": "Password must be at least 8 characters"}, status_code=400)
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    # Check if email/username already exists
+    cursor.execute("SELECT * FROM admins WHERE email=%s OR username=%s", (email, username))
+    if cursor.fetchone():
+        cursor.close()
+        db.close()
+        return JSONResponse({"error": "Email or username already registered"}, status_code=400)
+
+    # Generate OTP
+    otp = str(random.randint(100000, 999999))
+    hashed_pw = hash_password(password)
+
+    # Store temporarily in pending_users
+    cursor.execute(
+        """INSERT INTO pending_users (fullname, username, password, email, mobileno, otp, otp_created_at)
+           VALUES (%s, %s, %s, %s, %s, %s, NOW())""",
+        (fullname, username, hashed_pw, email, mobileno, otp)
+    )
+    db.commit()
+    cursor.close()
+    db.close()
+
+    # Send OTP via email
+    subject = "Your Verification OTP"
+    body = f"Hello {fullname},\n\nYour OTP for signup is: {otp}\n\nIt will expire in 5 minutes."
+
+    try:
+        sender_email = "amanraturi5757@gmail.com"
+        receiver_email = email
+        email_password = "epif azzt hgjg zvcy"  # App password
+
+        msg = MIMEText(body)
+        msg["Subject"] = subject
+        msg["From"] = sender_email
+        msg["To"] = receiver_email
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, email_password)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+            print("otp sent")
+
+    except Exception as e:
+        return JSONResponse({"error": f"Failed to send OTP: {str(e)}"}, status_code=500)
+
+    return JSONResponse({"message": "OTP sent to your email. Please verify."})
+
+# ================= VERIFY OTP =================
+@app.post("/verify_otp")
+async def verify_otp(email: str = Form(...), otp: str = Form(...)):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    # Check OTP validity (expire after 5 minutes)
+    cursor.execute(
+        """SELECT * FROM pending_users 
+           WHERE email=%s AND otp=%s AND TIMESTAMPDIFF(MINUTE, otp_created_at, NOW()) <= 5""",
+        (email, otp)
+    )
+    user = cursor.fetchone()
+
+    if not user:
+        cursor.close()
+        db.close()
+        return JSONResponse({"error": "Invalid or expired OTP"}, status_code=400)
+
+    # Insert into admins table
+    cursor.execute(
+        "INSERT INTO admins (fullname, username, password, email, mobileno) VALUES (%s, %s, %s, %s, %s)",
+        (user["fullname"], user["username"], user["password"], user["email"], user["mobileno"])
+    )
+    db.commit()
+
+    # Remove from pending_users
+    cursor.execute("DELETE FROM pending_users WHERE id=%s", (user["id"],))
+    db.commit()
+
+    cursor.close()
+    db.close()
+
+    return RedirectResponse(url="/index.html", status_code=303)
