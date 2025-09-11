@@ -205,34 +205,34 @@
       .then(response => {
         if (response.status === 401) {
           alert("Session expired. Please log in again.");
-          window.location.href = "index.html";
+          window.location.href = "/";
           return;
         }
         return response.json();
       })
       .then(data => {
-          if (!data) return;
+        if (!data) return;
 
-          const tbody = document.getElementById('user-table-body');
-          tbody.innerHTML = ""; // clear table before appending
+        const tbody = document.getElementById('user-table-body');
+        tbody.innerHTML = ""; // clear table before appending
 
-          data.forEach((user, index) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${index + 1}</td>   <!-- Auto serial number -->
-              <td>${user.id}</td>
-              <td>${user.fullname}</td>
-              <td>${user.username}</td>
-              <td>${user.address}</td>
-              <td>${user.mobilenumber}</td>
-              <td>
-                <button class="action update" onclick="handleUpdate('${user.id}')">Update</button>
-                <button class="action delete" onclick="handleDelete('${user.username}')">Delete</button>
-              </td>
-            `;
-            tbody.appendChild(tr);
-          });
-        })
+        data.forEach((user, index) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${index + 1}</td>   <!-- Auto serial number -->
+            <td>${user.id}</td>
+            <td>${user.fullname}</td>
+            <td>${user.username}</td>
+            <td>${user.address}</td>
+            <td>${user.mobilenumber}</td>
+            <td>
+              <button class="action update" onclick="handleUpdate('${user.id}')">Update</button>
+              <button class="action delete" onclick="handleDelete('${user.username}')">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      })
 
       .catch(error => console.error("Error fetching user list:", error));
 
@@ -256,7 +256,7 @@
 
     function logout() {
       localStorage.removeItem("access_token");
-      window.location.href = "index.html";
+      window.location.href = "/";
     }
   </script>
 </body>

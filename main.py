@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Form, Request, HTTPException, Depends
+from fastapi import FastAPI, Form, Request, HTTPException, Depends, Header
 from fastapi.responses import HTMLResponse, RedirectResponse,JSONResponse
 from jose import jwt
 from fastapi.security import HTTPBearer
@@ -11,6 +11,7 @@ import random, smtplib
 from email.mime.text import MIMEText
 import os
 from dotenv import load_dotenv
+
 
 # Load environment variables from .env
 load_dotenv()
@@ -47,6 +48,24 @@ def verify_token(credentials: dict = Depends(security)):
         return payload  # decoded JWT (can access username with payload["sub"])
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
+    
+def get_current_user(authorization: str = Header(None)):
+    """
+    Verify JWT from Authorization header.
+    """
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Missing Authorization header")
+    
+    try:
+        scheme, token = authorization.split()
+        if scheme.lower() != "bearer":
+            raise HTTPException(status_code=401, detail="Invalid auth scheme")
+        
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload  # contains username in payload["sub"]
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
 
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 MOBILE_REGEX = re.compile(r"^[0-9]{10}$")  # 10-digit mobile number
@@ -65,28 +84,19 @@ def get_login_page():
     with open("index.html", "r") as f:
         return f.read()
 
-@app.get("/signup.html", response_class=HTMLResponse)
+@app.get("/signup", response_class=HTMLResponse)
 def get_signup_page():
     with open("signup.html", "r") as f:
         return f.read()
 
-@app.get("/homepage.html", response_class=HTMLResponse)
+@app.get("/homepage", response_class=HTMLResponse)
 def get_homepage():
     with open("homepage.html", "r") as f:
         return f.read()
-    
-@app.get("/signup.html/index.html", response_class=HTMLResponse)
-def get_back_loginpage():
-    with open("index.html","r") as f:
-        return f.read()
-    
-@app.get("/signup.html/signup.html", response_class=HTMLResponse)
-def get_backto_back_signuppage():
-    with open("signup.html","r") as f :
-        return f.read()
+
     
 @app.get("/index.html", response_class=HTMLResponse)
-def get_back_loginpage():
+def get_back_loginpage(user: dict = Depends(get_current_user)):
     with open("index.html","r") as f:
         return f.read()
 
@@ -129,6 +139,9 @@ def get_admin_verify():
 def get_otp_verify():
     with open("otp.html", "r") as f:
         return f.read()
+    
+
+
 
 # update
 @app.get("/api/user")
@@ -329,7 +342,7 @@ async def register_user(
     cursor.close()
     db.close()
 
-    return RedirectResponse(url="/homepage.html", status_code=303)
+    return RedirectResponse(url="/homepage", status_code=303)
 
 @app.post("/update")                          # Update the userlist
 async def update_user(
@@ -354,7 +367,7 @@ async def update_user(
     db.close()
 
     #  Redirect to homepage
-    return RedirectResponse(url="/homepage.html", status_code=303)
+    return RedirectResponse(url="/homepage", status_code=303)
 
 
 # delete
