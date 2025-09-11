@@ -304,7 +304,6 @@ async def get_userlist(user: dict = Depends(verify_token)):
 async def register_user(
     request: Request,
     
-    id: str = Form(...),
     fullname: str = Form(...),
     username: str = Form(...),
     address: str = Form(...),
@@ -323,8 +322,8 @@ async def register_user(
         return {"error": "user already registered"}
 
     cursor.execute(
-        "INSERT INTO users (id, fullname, username, address, mobilenumber) VALUES (%s, %s, %s, %s, %s)",
-        (id, fullname, username, address, mobilenumber)
+        "INSERT INTO users (fullname, username, address, mobilenumber) VALUES ( %s, %s, %s, %s)",
+        (fullname, username, address, mobilenumber)
     )
     db.commit()
     cursor.close()
@@ -334,8 +333,8 @@ async def register_user(
 
 @app.post("/update")                          # Update the userlist
 async def update_user(
-    request: Request,               # This identifies the user to update
-    id : str = Form(...),
+    request: Request, # This identifies the user to update
+    id: str = Form(...),
     fullname: str = Form(...),
     username: str = Form(...),
     address: str = Form(...),

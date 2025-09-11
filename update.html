@@ -108,7 +108,7 @@
   <div class="update-container">
     <h2>Update User</h2>
     <form method="post" action="/update">
-      <input type="hidden" id="id" name="id">
+      <input type="hidden" name="id" id="id">
 
       <label for="fullname">Fullname</label>
       <input type="text" id="fullname" name="fullname" required
@@ -116,8 +116,8 @@
 
       <label for="username">Email</label>
       <input type="text" id="username" name="username" required
-      pattern="^(?=[A-Za-z][A-Za-z0-9@#$%^&*!]{5,11}$)(?=(?:[^0-9]*[0-9]){2}[^0-9]*$)(?=(?:[^@#$%^&*!]*[@#$%^&*!]){1}[^@#$%^&*!]*$)[A-Za-z0-9@#$%^&*!]+$"
-      title="Username must contain only alphabets, exactly 2 numbers, and 1 special character and 6-12">
+      pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+      title="Please enter a valid email (6-12 characters, letters, numbers, and special characters).">
 
       <label for="address">Address</label>
       <input type="text" id="address" name="address" required>
@@ -146,7 +146,7 @@
           return response.json();
         })
         .then(data => {
-          document.getElementById('id').value = data.id;
+          document.getElementById("id").value = data.id;
           document.getElementById('fullname').value = data.fullname;
           document.getElementById('username').value = data.username;
           document.getElementById('address').value = data.address;
