@@ -116,5 +116,14 @@
       <p><a href="verification.html">verification Page</a></p>
     </div>
  </div>
+ <script>
+  
+  // If already logged in, prevent access to otp
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    window.location.href = "homepage";
+  }
+</script>
+
 </body>
 </html>

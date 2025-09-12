@@ -121,5 +121,13 @@
       <p><a href="/">Login Page</a></p>
     </div>
  </div>
+ <script>
+  // If already logged in, prevent access to verification
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    window.location.href = "homepage";
+  }
+</script>
+
 </body>
 </html>

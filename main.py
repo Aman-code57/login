@@ -486,7 +486,7 @@ async def verify_otp(email: str = Form(...), otp: str = Form(...)):
     cursor.close()
     db.close()
 
-    return RedirectResponse(url="/index.html", status_code=303)
+    return RedirectResponse(url="/", status_code=303)
 
 
 

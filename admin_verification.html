@@ -101,5 +101,13 @@
     </form>
 
  </div>
+ <script>
+  // If already logged in, prevent access to signup
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    window.location.href = "homepage";
+  }
+</script>
+
 </body>
 </html>
